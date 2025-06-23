@@ -3,6 +3,7 @@ from transformers import XLMRobertaTokenizer
 import torch
 import torch.nn as nn
 from transformers import XLMRobertaModel
+from huggingface_hub import hf_hub_download
 
 # Define your custom model
 class SentimixtureNet(nn.Module):
@@ -25,7 +26,8 @@ class SentimixtureNet(nn.Module):
 # Load model and tokenizer
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model = SentimixtureNet().to(device)
-model.load_state_dict(torch.load("best_model/sentimixture_model.pt", map_location=device))
+model_path = hf_hub_download(repo_id="kausar57056/urdu-sarcasm-detect", filename="sentimixturemodel.pt"
+model.load_state_dict(torch.load(model_path, map_location=device))
 model.eval()
 tokenizer = XLMRobertaTokenizer.from_pretrained("best_model")
 
