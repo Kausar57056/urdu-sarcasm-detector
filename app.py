@@ -7,26 +7,6 @@ from huggingface_hub import hf_hub_download
 
 # Define your custom model
 class SentimixtureNet(nn.Module):
-    def init(self):
-        super(SentimixtureNet, self).init()
-        self.base = XLMRobertaModel.from_pretrained("xlm-roberta-base")
-        self.routing = nn.Linear(768, 768)
-        self.attn = nn.MultiheadAttention(embed_dim=768, num_heads=8, batch_first=True)
-        self.classifier = nn.Linear(768, 2)
-
-    def forward(self, input_ids, attention_mask):
-        outputs = self.base(input_ids=input_ids, attention_mask=attention_mask)
-        sequence_output = outputs.last_hidden_state
-        routed = torch.r…
-[11:24 pm, 23/06/2025] K✨: import streamlit as st
-from transformers import XLMRobertaTokenizer
-import torch
-import torch.nn as nn
-from transformers import XLMRobertaModel
-from huggingface_hub import hf_hub_download
-
-# Define your custom model
-class SentimixtureNet(nn.Module):
     def __init__(self):  # ✅ Corrected constructor
         super(SentimixtureNet, self)._init_()
         self.base = XLMRobertaModel.from_pretrained("xlm-roberta-base")
