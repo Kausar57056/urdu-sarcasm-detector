@@ -1,0 +1,12 @@
+best_model/sentimixture_model.pt filter=lfs diff=lfs merge=lfs -text
+model filter=lfs diff=lfs merge=lfs -text
+with filter=lfs diff=lfs merge=lfs -text
+Git filter=lfs diff=lfs merge=lfs -text
+LFS filter=lfs diff=lfs merge=lfs -text
+tracking
+git[[:space:]]push[[:space:]]origin[[:space:]]main
+git[[:space:]]lfs[[:space:]]track[[:space:]]best_model/sentimixture_model.pt filter=lfs diff=lfs merge=lfs -text
+best_model/sentimixture_model.pt
+git[[:space:]]add[[:space:]].gitattributes
+add[[:space:]]best_model/sentimixture_model.pt
+git[[:space:]]commit[[:space:]]-m[[:space:]]Re-added filter=lfs diff=lfs merge=lfs -text
