@@ -3,4 +3,4 @@ torch==2.5.1
 streamlit
 scikit-learn
 pandas
-sentencepiece=0.1.99
+sentencepiece==0.1.99
