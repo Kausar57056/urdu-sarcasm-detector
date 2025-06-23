@@ -1,6 +1,7 @@
 transformers==4.40.1
-torch==2.5.1
+torch==2.2.2
 streamlit==1.35.0
 huggingface_hub==0.23.0
 scikit-learn
 pandas
+sentencepiece==0.1.96
