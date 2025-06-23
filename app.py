@@ -1,4 +1,4 @@
-import streamlit as st
+[11:23 pm, 23/06/2025] K✨: import streamlit as st
 from transformers import XLMRobertaTokenizer
 import torch
 import torch.nn as nn
@@ -7,7 +7,27 @@ from huggingface_hub import hf_hub_download
 
 # Define your custom model
 class SentimixtureNet(nn.Module):
-    def _init_(self):
+    def init(self):
+        super(SentimixtureNet, self).init()
+        self.base = XLMRobertaModel.from_pretrained("xlm-roberta-base")
+        self.routing = nn.Linear(768, 768)
+        self.attn = nn.MultiheadAttention(embed_dim=768, num_heads=8, batch_first=True)
+        self.classifier = nn.Linear(768, 2)
+
+    def forward(self, input_ids, attention_mask):
+        outputs = self.base(input_ids=input_ids, attention_mask=attention_mask)
+        sequence_output = outputs.last_hidden_state
+        routed = torch.r…
+[11:24 pm, 23/06/2025] K✨: import streamlit as st
+from transformers import XLMRobertaTokenizer
+import torch
+import torch.nn as nn
+from transformers import XLMRobertaModel
+from huggingface_hub import hf_hub_download
+
+# Define your custom model
+class SentimixtureNet(nn.Module):
+    def __init__(self):  # ✅ Corrected constructor
         super(SentimixtureNet, self)._init_()
         self.base = XLMRobertaModel.from_pretrained("xlm-roberta-base")
         self.routing = nn.Linear(768, 768)
@@ -26,10 +46,14 @@ class SentimixtureNet(nn.Module):
 # Load model and tokenizer
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model = SentimixtureNet().to(device)
-model_path = hf_hub_download(repo_id="kausar57056/urdu-sarcasm-detect", filename="sentimixturemodel.pt"
+
+# ✅ Download model weights from Hugging Face
+model_path = hf_hub_download(repo_id="kausar57056/urdu-sarcasm-detect", filename="sentimixture_model.pt")
 model.load_state_dict(torch.load(model_path, map_location=device))
 model.eval()
-tokenizer = XLMRobertaTokenizer.from_pretrained("best_model")
+
+# ✅ Load tokenizer from Hugging Face (make sure tokenizer files were uploaded there)
+tokenizer = XLMRobertaTokenizer.from_pretrained("kausar57056/urdu-sarcasm-detect")
 
 # Streamlit UI
 st.set_page_config(page_title="Urdu Sarcasm Detector", layout="centered")
@@ -49,4 +73,4 @@ if st.button("🔍 Detect Sarcasm"):
                 logits = model(**enc)
                 pred = torch.argmax(logits, dim=1).item()
                 label = "😏 Sarcastic" if pred == 1 else "🙂 Not Sarcastic"
-                st.success(f"*Prediction:* {label}")
+                st.success(f"Prediction: {label}")
