@@ -3,3 +3,4 @@ torch==2.5.1
 pandas
 scikit-learn
 streamlit==1.31.1
+
