@@ -9,7 +9,7 @@ print("Python version: ", sys.version)
 
 # Define your custom model architecture
 class SentimixtureNet(nn.Module):
-    def _init_(self):
+    def __init__(self):
         super(SentimixtureNet, self)._init_()
         self.base = XLMRobertaModel.from_pretrained("xlm-roberta-base")
         self.routing = nn.Linear(768, 768)
