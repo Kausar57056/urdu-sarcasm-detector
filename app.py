@@ -1,13 +1,12 @@
 import streamlit as st
-from transformers import XLMRobertaTokenizer
 import torch
 import torch.nn as nn
-from transformers import XLMRobertaModel
+from transformers import AutoTokenizer, XLMRobertaModel
 from huggingface_hub import hf_hub_download
 
-# Define your custom model
+# Define your custom model architecture
 class SentimixtureNet(nn.Module):
-    def __init__(self):  # ✅ Corrected constructor
+    def _init_(self):
         super(SentimixtureNet, self)._init_()
         self.base = XLMRobertaModel.from_pretrained("xlm-roberta-base")
         self.routing = nn.Linear(768, 768)
@@ -23,21 +22,21 @@ class SentimixtureNet(nn.Module):
         logits = self.classifier(pooled)
         return logits
 
-# Load model and tokenizer
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-model = SentimixtureNet().to(device)
+# Load tokenizer and model
+@st.cache_resource
+def load_model_and_tokenizer():
+    tokenizer = AutoTokenizer.from_pretrained("kausar57056/urdu-sarcasm-detect")
+    model = SentimixtureNet()
+    model_path = hf_hub_download(repo_id="kausar57056/urdu-sarcasm-detect", filename="sentimixture_model.pt")
+    model.load_state_dict(torch.load(model_path, map_location=torch.device("cpu")))
+    model.eval()
+    return model, tokenizer
 
-# ✅ Download model weights from Hugging Face
-model_path = hf_hub_download(repo_id="kausar57056/urdu-sarcasm-detect", filename="sentimixture_model.pt")
-model.load_state_dict(torch.load(model_path, map_location=device))
-model.eval()
-
-# ✅ Load tokenizer from Hugging Face (make sure tokenizer files were uploaded there)
-tokenizer = XLMRobertaTokenizer.from_pretrained("kausar57056/urdu-sarcasm-detect")
+model, tokenizer = load_model_and_tokenizer()
 
 # Streamlit UI
 st.set_page_config(page_title="Urdu Sarcasm Detector", layout="centered")
-st.title("🧠 Urdu Sarcasm Detection")
+st.title("😏 Urdu Sarcasm Detection")
 st.write("Enter an Urdu tweet to detect if it's sarcastic or not.")
 
 text = st.text_area("✍️ Write your Urdu tweet here:")
@@ -47,10 +46,9 @@ if st.button("🔍 Detect Sarcasm"):
         st.warning("⚠️ Please enter some Urdu text.")
     else:
         with st.spinner("Analyzing..."):
-            enc = tokenizer(text, return_tensors="pt", truncation=True, padding=True, max_length=128)
-            enc = {k: v.to(device) for k, v in enc.items()}
+            inputs = tokenizer(text, return_tensors="pt", truncation=True, padding=True, max_length=128)
             with torch.no_grad():
-                logits = model(**enc)
+                logits = model(**inputs)
                 pred = torch.argmax(logits, dim=1).item()
                 label = "😏 Sarcastic" if pred == 1 else "🙂 Not Sarcastic"
-                st.success(f"Prediction: {label}")
+                st.success(f"*Prediction:* {label}")
