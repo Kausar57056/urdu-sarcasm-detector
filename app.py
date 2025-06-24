@@ -1,8 +1,11 @@
+import sys
 import streamlit as st
 import torch
 import torch.nn as nn
 from transformers import AutoTokenizer, XLMRobertaModel
 from huggingface_hub import hf_hub_download
+
+print("Python version: ", sys.version)
 
 # Define your custom model architecture
 class SentimixtureNet(nn.Module):
