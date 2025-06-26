@@ -33,8 +33,8 @@ def load_model_and_tokenizer():
         model.eval()
         return model, tokenizer
     except Exception as e:
-        st.error(f"❌ Failed to load model or tokenizer: {e}")
-        raise
+        st.error(f"⚠️ Error loading model or tokenizer: {e}")
+        raise e  # Re-raise to show error in logs too
 
 # Load once at app start
 model, tokenizer = load_model_and_tokenizer()
