@@ -4,7 +4,7 @@ import torch.nn as nn
 from transformers import AutoTokenizer, XLMRobertaModel
 from huggingface_hub import hf_hub_download
 
-# Define your model
+# Define your custom model
 class SentimixtureNet(nn.Module):
     def __init__(self):
         super(SentimixtureNet, self).__init__()
@@ -22,27 +22,21 @@ class SentimixtureNet(nn.Module):
         logits = self.classifier(pooled)
         return logits
 
-# Load tokenizer + model
+# Load tokenizer and model from Hugging Face Hub
 @st.cache_resource
 def load_model_and_tokenizer():
-    try:
-        st.info("🔄 Loading tokenizer and model...")
-        tokenizer = AutoTokenizer.from_pretrained("kausar57056/urdu-sarcasm-detect")
-        model = SentimixtureNet()
-        st.info("📥 Downloading model weights from Hugging Face...")
-        model_path = hf_hub_download(
-            repo_id="kausar57056/urdu-sarcasm-detect",
-            filename="sentimixture_model.pt"
-        )
-        st.info("📦 Loading model state_dict...")
-        state_dict = torch.load(model_path, map_location=torch.device("cpu"))
-        model.load_state_dict(state_dict)
-        model.eval()
-        st.success("✅ Model and tokenizer loaded successfully!")
-        return model, tokenizer
-    except Exception as e:
-        st.error(f"❌ Failed to load model: {e}")
-        raise
+    tokenizer = AutoTokenizer.from_pretrained("kausar57056/urdu-sarcasm-detect")
+    model = SentimixtureNet()
+    model_path = hf_hub_download(
+        repo_id="kausar57056/urdu-sarcasm-detect",
+        filename="sentimixture_model.pt"
+    )
+    model.load_state_dict(torch.load(model_path, map_location=torch.device("cpu")))
+    model.eval()
+    return model, tokenizer
+
+# Load the model and tokenizer
+model, tokenizer = load_model_and_tokenizer()
 
 # Streamlit UI
 st.set_page_config(page_title="Urdu Sarcasm Detector", layout="centered")
