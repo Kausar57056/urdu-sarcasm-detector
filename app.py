@@ -36,7 +36,7 @@ def load_model_and_tokenizer():
         st.write("📁 Downloading model file...")
         model_path = hf_hub_download(
             repo_id="kausar57056/urdu-sarcasm-detect",
-            filename="model_final.pt"
+            filename="sentimixture_model.pt"
         )
         st.write(f"✅ Model file downloaded to: {model_path}")
 
