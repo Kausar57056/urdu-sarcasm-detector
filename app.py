@@ -26,7 +26,7 @@ class SentimixtureNet(nn.Module):
 @st.cache_resource
 def load_model_and_tokenizer():
     try:
-        tokenizer = AutoTokenizer.from_pretrained("kausar57056/urdu-sarcasm-detect")
+        tokenizer = AutoTokenizer.from_pretrained("xlm-roberta-base")
         model = SentimixtureNet()
         model_path = hf_hub_download(repo_id="kausar57056/urdu-sarcasm-detect", filename="sentimixture_model.pt")
         model.load_state_dict(torch.load(model_path, map_location=torch.device("cpu")))
