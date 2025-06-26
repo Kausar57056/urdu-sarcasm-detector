@@ -36,7 +36,10 @@ def load_model_and_tokenizer():
         tokenizer = AutoTokenizer.from_pretrained("kausar57056/urdu-sarcasm-detect")
 
         st.write("📦 Downloading model...")
-        model_path = hf_hub_download(repo_id="kausar57056/urdu-sarcasm-detect", filename="sentimixture_model.pt")
+        model_path = hf_hub_download(
+            repo_id="kausar57056/urdu-sarcasm-detect",
+            filename="sentimixture_model.pt"
+        )
 
         st.write(f"✅ Model downloaded to: {model_path}")
 
