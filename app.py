@@ -1,16 +1,13 @@
-import sys
 import streamlit as st
 import torch
 import torch.nn as nn
 from transformers import AutoTokenizer, XLMRobertaModel
 from huggingface_hub import hf_hub_download
 
-print("Python version: ", sys.version)
-
-# Define your custom model architecture
+# Define your model
 class SentimixtureNet(nn.Module):
     def __init__(self):
-        super(SentimixtureNet, self)._init_()
+        super(SentimixtureNet, self).__init__()
         self.base = XLMRobertaModel.from_pretrained("xlm-roberta-base")
         self.routing = nn.Linear(768, 768)
         self.attn = nn.MultiheadAttention(embed_dim=768, num_heads=8, batch_first=True)
@@ -25,7 +22,7 @@ class SentimixtureNet(nn.Module):
         logits = self.classifier(pooled)
         return logits
 
-# Load tokenizer and model
+# Load tokenizer + model
 @st.cache_resource
 def load_model_and_tokenizer():
     tokenizer = AutoTokenizer.from_pretrained("kausar57056/urdu-sarcasm-detect")
@@ -54,4 +51,4 @@ if st.button("🔍 Detect Sarcasm"):
                 logits = model(**inputs)
                 pred = torch.argmax(logits, dim=1).item()
                 label = "😏 Sarcastic" if pred == 1 else "🙂 Not Sarcastic"
-                st.success(f"*Prediction:* {label}")
+                st.success(f"Prediction: {label}")
