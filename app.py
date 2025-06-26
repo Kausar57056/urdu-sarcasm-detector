@@ -4,7 +4,7 @@ import torch.nn as nn
 from transformers import AutoTokenizer, XLMRobertaModel
 from huggingface_hub import hf_hub_download
 
-# 🚀 Model Architecture
+# Define model architecture
 class SentimixtureNet(nn.Module):
     def __init__(self):
         super(SentimixtureNet, self).__init__()
@@ -22,62 +22,52 @@ class SentimixtureNet(nn.Module):
         logits = self.classifier(pooled)
         return logits
 
-# 🌟 UI Setup
 st.set_page_config(page_title="Urdu Sarcasm Detector", layout="centered")
-st.markdown("<h1 style='text-align: center;'>😏 Urdu Sarcasm Detection</h1>", unsafe_allow_html=True)
-st.markdown(
-    "<p style='text-align: center; color: grey;'>Enter an Urdu tweet below to find out if it's <strong>sarcastic</strong> or not!</p>",
-    unsafe_allow_html=True
-)
-st.markdown("---")
+st.title("😏 Urdu Sarcasm Detection")
+st.write("Enter an Urdu tweet below to find out if it's sarcastic or not!")
 
-# 📦 Load model & tokenizer
+# ⏳ Logs visible to debug app crash
+st.write("🔁 Running load_model_and_tokenizer()...")
+
 @st.cache_resource
 def load_model_and_tokenizer():
     try:
-        with st.spinner("🔄 Downloading tokenizer..."):
-            tokenizer = AutoTokenizer.from_pretrained("kausar57056/urdu-sarcasm-detect")
+        st.write("📦 Loading tokenizer...")
+        tokenizer = AutoTokenizer.from_pretrained("kausar57056/urdu-sarcasm-detect")
 
-        with st.spinner("📁 Downloading model weights..."):
-            model_path = hf_hub_download(
-                repo_id="kausar57056/urdu-sarcasm-detect",
-                filename="sentimixture_model.pt"
-            )
+        st.write("📦 Downloading model...")
+        model_path = hf_hub_download(repo_id="kausar57056/urdu-sarcasm-detect", filename="sentimixture_model.pt")
 
-        with st.spinner("📦 Loading model..."):
-            model = SentimixtureNet()
-            model.load_state_dict(torch.load(model_path, map_location=torch.device("cpu")))
-            model.eval()
+        st.write(f"✅ Model downloaded to: {model_path}")
 
-        st.success("✅ Model and tokenizer loaded successfully!")
+        model = SentimixtureNet()
+        model.load_state_dict(torch.load(model_path, map_location=torch.device("cpu")))
+        model.eval()
+
+        st.write("✅ Model & tokenizer loaded successfully!")
         return model, tokenizer
 
     except Exception as e:
-        st.error(f"❌ Error loading model/tokenizer:\n\n`{e}`")
-        raise e
+        st.error(f"🚨 Failed to load model/tokenizer: {e}")
+        raise
 
-# 🔧 Load resources
+# 🧠 Load once
 model, tokenizer = load_model_and_tokenizer()
 
-# ✍️ User Input
-text = st.text_area("📝 Write your Urdu tweet below:", height=150, placeholder="مثال: آج موسم بہت زبردست ہے، بارش بھی ہو رہی ہے 😒")
+# 📥 Input
+text = st.text_area("✍️ Write your Urdu tweet here:")
 
-# 🔍 Predict
-if st.button("🔎 Detect Sarcasm"):
-    if text.strip() == "":
-        st.warning("⚠️ Please enter a valid Urdu sentence.")
+if st.button("🔍 Detect Sarcasm"):
+    if not text.strip():
+        st.warning("⚠️ Please enter some Urdu text.")
     else:
-        with st.spinner("🔍 Analyzing..."):
+        with st.spinner("Analyzing..."):
             try:
-                inputs = tokenizer(text, return_tensors="pt", truncation=True, padding=True, max_length=128)
+                enc = tokenizer(text, return_tensors="pt", truncation=True, padding=True, max_length=128)
                 with torch.no_grad():
-                    logits = model(**inputs)
+                    logits = model(**enc)
                     pred = torch.argmax(logits, dim=1).item()
                     label = "😏 Sarcastic" if pred == 1 else "🙂 Not Sarcastic"
                     st.success(f"*Prediction:* {label}")
             except Exception as e:
-                st.error(f"❌ Error during prediction:\n\n`{e}`")
-
-# 🔚 Footer
-st.markdown("---")
-st.markdown("<p style='text-align: center; font-size: 13px;'>Built with ❤️ using Streamlit and Hugging Face Transformers</p>", unsafe_allow_html=True)
+                st.error(f"❌ Prediction failed: {e}")
