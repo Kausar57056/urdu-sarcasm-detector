@@ -4,12 +4,10 @@ import torch.nn as nn
 from transformers import AutoTokenizer, XLMRobertaModel
 from huggingface_hub import hf_hub_download
 
-# -----------------------------
-# Define SentimixtureNet model
-# -----------------------------
+# Define your model
 class SentimixtureNet(nn.Module):
-    def __init__(self):
-        super(SentimixtureNet, self).__init__()
+    def _init_(self):
+        super(SentimixtureNet, self)._init_()
         self.base = XLMRobertaModel.from_pretrained("xlm-roberta-base")
         self.routing = nn.Linear(768, 768)
         self.attn = nn.MultiheadAttention(embed_dim=768, num_heads=8, batch_first=True)
@@ -24,9 +22,11 @@ class SentimixtureNet(nn.Module):
         logits = self.classifier(pooled)
         return logits
 
-# -----------------------------
-# Load model & tokenizer
-# -----------------------------
+# Streamlit UI setup
+st.set_page_config(page_title="Urdu Sarcasm Detector", layout="centered")
+st.title("😏 Urdu Sarcasm Detection")
+st.write("Enter an Urdu tweet to detect if it's sarcastic or not.")
+
 @st.cache_resource
 def load_model_and_tokenizer():
     try:
@@ -51,19 +51,14 @@ def load_model_and_tokenizer():
         st.error(f"❌ Error loading model or tokenizer:\n{e}")
         raise e
 
-# -----------------------------
-# Streamlit UI
-# -----------------------------
-st.set_page_config(page_title="Urdu Sarcasm Detector", layout="centered")
-st.title("😏 Urdu Sarcasm Detection")
-st.write("Enter an Urdu tweet to detect if it's sarcastic or not.")
-
+# Load model and tokenizer
 model, tokenizer = load_model_and_tokenizer()
 
+# User input
 text = st.text_area("✍️ Write your Urdu tweet here:")
 
 if st.button("🔍 Detect Sarcasm"):
-    if not text.strip():
+    if text.strip() == "":
         st.warning("⚠️ Please enter some Urdu text.")
     else:
         with st.spinner("Analyzing..."):
@@ -73,6 +68,6 @@ if st.button("🔍 Detect Sarcasm"):
                     logits = model(**inputs)
                     pred = torch.argmax(logits, dim=1).item()
                     label = "😏 Sarcastic" if pred == 1 else "🙂 Not Sarcastic"
-                    st.success(f"*Prediction:* {label}")
+                    st.success(f"Prediction: {label}")
             except Exception as e:
                 st.error(f"❌ Error during prediction: {e}")
