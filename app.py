@@ -30,6 +30,7 @@ st.write("Enter an Urdu tweet to detect if it's sarcastic or not.")
 @st.cache_resource
 def load_model_and_tokenizer():
     try:
+        st.write("🔄 Downloading tokenizer...")
         tokenizer = AutoTokenizer.from_pretrained("kausar57056/urdu-sarcasm-detect")
 
         st.write("📁 Downloading model file...")
@@ -37,8 +38,10 @@ def load_model_and_tokenizer():
             repo_id="kausar57056/urdu-sarcasm-detect",
             filename="sentimixture_model.pt"
         )
+        st.write(f"✅ Model file downloaded to: {model_path}")
 
         model = SentimixtureNet()
+        st.write("📦 Loading model weights...")
         model.load_state_dict(torch.load(model_path, map_location=torch.device("cpu")))
         model.eval()
         st.write("✅ Model loaded and ready!")
