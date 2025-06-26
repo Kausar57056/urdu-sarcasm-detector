@@ -4,10 +4,10 @@ import torch.nn as nn
 from transformers import AutoTokenizer, XLMRobertaModel
 from huggingface_hub import hf_hub_download
 
-# Define your model architecture
+# Define your model
 class SentimixtureNet(nn.Module):
     def __init__(self):
-        super().__init__()
+        super(SentimixtureNet, self).__init__()
         self.base = XLMRobertaModel.from_pretrained("xlm-roberta-base")
         self.routing = nn.Linear(768, 768)
         self.attn = nn.MultiheadAttention(embed_dim=768, num_heads=8, batch_first=True)
@@ -22,28 +22,23 @@ class SentimixtureNet(nn.Module):
         logits = self.classifier(pooled)
         return logits
 
-# Load model and tokenizer (cached)
-@st.cache_resource
-def load_model_and_tokenizer():
-    try:
-        tokenizer = AutoTokenizer.from_pretrained("xlm-roberta-base")
-        model = SentimixtureNet()
-        model_path = hf_hub_download(repo_id="kausar57056/urdu-sarcasm-detect", filename="final_model.pt")
-        model.load_state_dict(torch.load(model_path, map_location=torch.device("cpu")))
-        model.eval()
-        return model, tokenizer
-    except Exception as e:
-        st.error(f"⚠️ Error loading model or tokenizer: {e}")
-        raise e  # Re-raise to show error in logs too
-
-# Load once at app start
-model, tokenizer = load_model_and_tokenizer()
-
-# Streamlit UI
+# Streamlit UI setup
 st.set_page_config(page_title="Urdu Sarcasm Detector", layout="centered")
 st.title("😏 Urdu Sarcasm Detection")
 st.write("Enter an Urdu tweet to detect if it's sarcastic or not.")
 
+try:
+    # Load tokenizer and model
+    tokenizer = AutoTokenizer.from_pretrained("xlm-roberta-base")
+    model_path = hf_hub_download(repo_id="kausar57056/urdu-sarcasm-detect", filename="model_final.pt")
+    model = SentimixtureNet()
+    model.load_state_dict(torch.load(model_path, map_location=torch.device("cpu")))
+    model.eval()
+except Exception as e:
+    st.error(f"❌ Error loading model or tokenizer: {e}")
+    st.stop()
+
+# User input
 text = st.text_area("✍️ Write your Urdu tweet here:")
 
 if st.button("🔍 Detect Sarcasm"):
@@ -57,6 +52,6 @@ if st.button("🔍 Detect Sarcasm"):
                     logits = model(**inputs)
                     pred = torch.argmax(logits, dim=1).item()
                     label = "😏 Sarcastic" if pred == 1 else "🙂 Not Sarcastic"
-                    st.success(f"*Prediction:* {label}")
+                    st.success(f"Prediction: {label}")
             except Exception as e:
-                st.error(f"⚠️ Error during prediction: {e}")
+                st.error(f"❌ Error during prediction: {e}")
