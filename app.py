@@ -4,7 +4,9 @@ import torch.nn as nn
 from transformers import AutoTokenizer, XLMRobertaModel
 from huggingface_hub import hf_hub_download
 
-# Define model architecture
+# -----------------------------
+# Define SentimixtureNet model
+# -----------------------------
 class SentimixtureNet(nn.Module):
     def __init__(self):
         super(SentimixtureNet, self).__init__()
@@ -22,42 +24,42 @@ class SentimixtureNet(nn.Module):
         logits = self.classifier(pooled)
         return logits
 
-st.set_page_config(page_title="Urdu Sarcasm Detector", layout="centered")
-st.title("😏 Urdu Sarcasm Detection")
-st.write("Enter an Urdu tweet below to find out if it's sarcastic or not!")
-
-# ⏳ Logs visible to debug app crash
-st.write("🔁 Running load_model_and_tokenizer()...")
-
+# -----------------------------
+# Load model & tokenizer
+# -----------------------------
 @st.cache_resource
 def load_model_and_tokenizer():
     try:
-        st.write("📦 Loading tokenizer...")
+        st.write("🔄 Downloading tokenizer...")
         tokenizer = AutoTokenizer.from_pretrained("kausar57056/urdu-sarcasm-detect")
 
-        st.write("📦 Downloading model...")
+        st.write("📁 Downloading model file...")
         model_path = hf_hub_download(
             repo_id="kausar57056/urdu-sarcasm-detect",
-            filename="sentimixture_model.pt"
+            filename="model_final.pt"
         )
-
-        st.write(f"✅ Model downloaded to: {model_path}")
+        st.write(f"✅ Model file downloaded to: {model_path}")
 
         model = SentimixtureNet()
+        st.write("📦 Loading model weights...")
         model.load_state_dict(torch.load(model_path, map_location=torch.device("cpu")))
         model.eval()
+        st.write("✅ Model loaded and ready!")
 
-        st.write("✅ Model & tokenizer loaded successfully!")
         return model, tokenizer
-
     except Exception as e:
-        st.error(f"🚨 Failed to load model/tokenizer: {e}")
-        raise
+        st.error(f"❌ Error loading model or tokenizer:\n{e}")
+        raise e
 
-# 🧠 Load once
+# -----------------------------
+# Streamlit UI
+# -----------------------------
+st.set_page_config(page_title="Urdu Sarcasm Detector", layout="centered")
+st.title("😏 Urdu Sarcasm Detection")
+st.write("Enter an Urdu tweet to detect if it's sarcastic or not.")
+
 model, tokenizer = load_model_and_tokenizer()
 
-# 📥 Input
 text = st.text_area("✍️ Write your Urdu tweet here:")
 
 if st.button("🔍 Detect Sarcasm"):
@@ -66,11 +68,11 @@ if st.button("🔍 Detect Sarcasm"):
     else:
         with st.spinner("Analyzing..."):
             try:
-                enc = tokenizer(text, return_tensors="pt", truncation=True, padding=True, max_length=128)
+                inputs = tokenizer(text, return_tensors="pt", truncation=True, padding=True, max_length=128)
                 with torch.no_grad():
-                    logits = model(**enc)
+                    logits = model(**inputs)
                     pred = torch.argmax(logits, dim=1).item()
                     label = "😏 Sarcastic" if pred == 1 else "🙂 Not Sarcastic"
                     st.success(f"*Prediction:* {label}")
             except Exception as e:
-                st.error(f"❌ Prediction failed: {e}")
+                st.error(f"❌ Error during prediction: {e}")
