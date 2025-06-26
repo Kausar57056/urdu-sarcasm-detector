@@ -27,7 +27,6 @@ st.set_page_config(page_title="Urdu Sarcasm Detector", layout="centered")
 st.title("😏 Urdu Sarcasm Detection")
 st.write("Enter an Urdu tweet to detect if it's sarcastic or not.")
 
-try:
 @st.cache_resource
 def load_model_and_tokenizer():
     try:
@@ -46,6 +45,9 @@ def load_model_and_tokenizer():
     except Exception as e:
         st.error(f"❌ Error loading model or tokenizer: {e}")
         raise e
+
+# Load model and tokenizer
+model, tokenizer = load_model_and_tokenizer()
 
 # User input
 text = st.text_area("✍️ Write your Urdu tweet here:")
