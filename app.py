@@ -28,15 +28,24 @@ st.title("😏 Urdu Sarcasm Detection")
 st.write("Enter an Urdu tweet to detect if it's sarcastic or not.")
 
 try:
-    # Load tokenizer and model
-    tokenizer = AutoTokenizer.from_pretrained("xlm-roberta-base")
-    model_path = hf_hub_download(repo_id="kausar57056/urdu-sarcasm-detect", filename="model_final.pt")
-    model = SentimixtureNet()
-    model.load_state_dict(torch.load(model_path, map_location=torch.device("cpu")))
-    model.eval()
-except Exception as e:
-    st.error(f"❌ Error loading model or tokenizer: {e}")
-    st.stop()
+@st.cache_resource
+def load_model_and_tokenizer():
+    try:
+        st.write("🔄 Downloading tokenizer...")
+        tokenizer = AutoTokenizer.from_pretrained("kausar57056/urdu-sarcasm-detect")
+
+        st.write("🔄 Downloading model file...")
+        model_path = hf_hub_download(repo_id="kausar57056/urdu-sarcasm-detect", filename="model_final.pt")
+
+        model = SentimixtureNet()
+        model.load_state_dict(torch.load(model_path, map_location=torch.device("cpu")))
+        model.eval()
+
+        st.write("✅ Model & tokenizer loaded.")
+        return model, tokenizer
+    except Exception as e:
+        st.error(f"❌ Error loading model or tokenizer: {e}")
+        raise e
 
 # User input
 text = st.text_area("✍️ Write your Urdu tweet here:")
