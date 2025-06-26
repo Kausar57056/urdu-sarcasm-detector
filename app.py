@@ -4,10 +4,10 @@ import torch.nn as nn
 from transformers import AutoTokenizer, XLMRobertaModel
 from huggingface_hub import hf_hub_download
 
-# Define your custom model
+# Define your model architecture
 class SentimixtureNet(nn.Module):
     def __init__(self):
-        super(SentimixtureNet, self).__init__()
+        super().__init__()
         self.base = XLMRobertaModel.from_pretrained("xlm-roberta-base")
         self.routing = nn.Linear(768, 768)
         self.attn = nn.MultiheadAttention(embed_dim=768, num_heads=8, batch_first=True)
@@ -22,20 +22,21 @@ class SentimixtureNet(nn.Module):
         logits = self.classifier(pooled)
         return logits
 
-# Load tokenizer and model from Hugging Face Hub
+# Load model and tokenizer (cached)
 @st.cache_resource
 def load_model_and_tokenizer():
-    tokenizer = AutoTokenizer.from_pretrained("kausar57056/urdu-sarcasm-detect")
-    model = SentimixtureNet()
-    model_path = hf_hub_download(
-        repo_id="kausar57056/urdu-sarcasm-detect",
-        filename="sentimixture_model.pt"
-    )
-    model.load_state_dict(torch.load(model_path, map_location=torch.device("cpu")))
-    model.eval()
-    return model, tokenizer
+    try:
+        tokenizer = AutoTokenizer.from_pretrained("kausar57056/urdu-sarcasm-detect")
+        model = SentimixtureNet()
+        model_path = hf_hub_download(repo_id="kausar57056/urdu-sarcasm-detect", filename="sentimixture_model.pt")
+        model.load_state_dict(torch.load(model_path, map_location=torch.device("cpu")))
+        model.eval()
+        return model, tokenizer
+    except Exception as e:
+        st.error(f"❌ Failed to load model or tokenizer: {e}")
+        raise
 
-# Load the model and tokenizer
+# Load once at app start
 model, tokenizer = load_model_and_tokenizer()
 
 # Streamlit UI
@@ -50,9 +51,12 @@ if st.button("🔍 Detect Sarcasm"):
         st.warning("⚠️ Please enter some Urdu text.")
     else:
         with st.spinner("Analyzing..."):
-            inputs = tokenizer(text, return_tensors="pt", truncation=True, padding=True, max_length=128)
-            with torch.no_grad():
-                logits = model(**inputs)
-                pred = torch.argmax(logits, dim=1).item()
-                label = "😏 Sarcastic" if pred == 1 else "🙂 Not Sarcastic"
-                st.success(f"Prediction: {label}")
+            try:
+                inputs = tokenizer(text, return_tensors="pt", truncation=True, padding=True, max_length=128)
+                with torch.no_grad():
+                    logits = model(**inputs)
+                    pred = torch.argmax(logits, dim=1).item()
+                    label = "😏 Sarcastic" if pred == 1 else "🙂 Not Sarcastic"
+                    st.success(f"*Prediction:* {label}")
+            except Exception as e:
+                st.error(f"⚠️ Error during prediction: {e}")
