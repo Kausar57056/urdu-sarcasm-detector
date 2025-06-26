@@ -1,6 +1,7 @@
-streamlit==1.32.2
-transformers==4.40.1
-torch==2.7.1
-huggingface_hub==0.23.0
+streamlit
+transformers
+torch
+huggingface_hub
 sentencepiece
-Pillow==10.2.0
+scikit-learn
+pandas
