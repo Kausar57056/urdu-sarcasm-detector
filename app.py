@@ -34,22 +34,20 @@ def load_model_and_tokenizer():
         tokenizer = AutoTokenizer.from_pretrained("kausar57056/urdu-sarcasm-detect")
 
         st.write("🔄 Downloading model file...")
-        model_path = hf_hub_download(
-            repo_id="kausar57056/urdu-sarcasm-detect",
-            filename="sentimixture_model.pt",
-            repo_type="model"
-        )
+        model_path = hf_hub_download(repo_id="kausar57056/urdu-sarcasm-detect", filename="sentimixture_model.pt")
 
-        st.write(f"📁 Model path: {model_path}")
-        st.write("📦 Initializing model...")
+        st.write("✅ Downloaded. Loading model...")
         model = SentimixtureNet()
-        st.write("📥 Loading weights...")
         model.load_state_dict(torch.load(model_path, map_location=torch.device("cpu")))
         model.eval()
-        st.success("✅ Model & tokenizer loaded.")
+
+        st.write("✅ Model & tokenizer loaded.")
         return model, tokenizer
+
     except Exception as e:
-        st.error(f"❌ Error in load_model_and_tokenizer: {e}")
+        st.error("❌ Crash during model/tokenizer loading")
+        st.error(str(e))
+        st.text(traceback.format_exc())  # <–– This prints the full error stack trace
         raise e
         
 model, tokenizer = load_model_and_tokenizer()
