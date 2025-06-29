@@ -71,7 +71,8 @@ if st.button("🔍 Detect Sarcasm"):
                     st.success(f"*Prediction:* {label}")
             except Exception as e:
                 st.error(f"❌ Error during prediction: {e}")
-[10:53 pm, 26/06/2025] K✨: @st.cache_resource
+
+@st.cache_resource
 def load_model_and_tokenizer():
     try:
         st.write("🔄 Downloading tokenizer...")
