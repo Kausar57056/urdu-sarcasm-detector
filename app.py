@@ -34,7 +34,7 @@ def load_model_and_tokenizer():
         tokenizer = AutoTokenizer.from_pretrained("kausar57056/urdu-sarcasm-detect")
 
         st.write("🔄 Downloading model...")
-        model_path = hf_hub_download(repo_id="kausar57056/urdu-sarcasm-detect", filename="model_final.pt")
+        model_path = hf_hub_download(repo_id="kausar57056/urdu-sarcasm-detect", filename="sentimixture_model.pt")
 
         model = SentimixtureNet()
         model.load_state_dict(torch.load(model_path, map_location=torch.device("cpu")))
