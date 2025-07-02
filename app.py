@@ -8,8 +8,8 @@ from huggingface_hub import hf_hub_download
 # Define SentimixtureNet model
 # -----------------------------
 class SentimixtureNet(nn.Module):
-    def _init_(self):
-        super(SentimixtureNet, self)._init_()
+    def __init__(self):
+        super(SentimixtureNet, self).___init_()
         self.base = XLMRobertaModel.from_pretrained("xlm-roberta-base")
         self.routing = nn.Linear(768, 768)
         self.attn = nn.MultiheadAttention(embed_dim=768, num_heads=8, batch_first=True)
