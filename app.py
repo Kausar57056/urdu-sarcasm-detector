@@ -8,8 +8,8 @@ from huggingface_hub import hf_hub_download
 # Define SentimixtureNet model
 # -----------------------------
 class SentimixtureNet(nn.Module):
-    def __init__(self):
-        super(SentimixtureNet, self).__init__()
+    def _init_(self):
+        super(SentimixtureNet, self)._init_()
         self.base = XLMRobertaModel.from_pretrained("xlm-roberta-base")
         self.routing = nn.Linear(768, 768)
         self.attn = nn.MultiheadAttention(embed_dim=768, num_heads=8, batch_first=True)
@@ -30,20 +30,25 @@ class SentimixtureNet(nn.Module):
 @st.cache_resource
 def load_model_and_tokenizer():
     try:
-        st.write("🔄 Loading tokenizer...")
+        st.write("🔄 Downloading tokenizer...")
         tokenizer = AutoTokenizer.from_pretrained("kausar57056/urdu-sarcasm-detect")
 
-        st.write("🔄 Downloading model...")
-        model_path = hf_hub_download(repo_id="kausar57056/urdu-sarcasm-detect", filename="sentimixture_model.pt")
+        st.write("📁 Downloading model file...")
+        model_path = hf_hub_download(
+            repo_id="kausar57056/urdu-sarcasm-detect",
+            filename="sentimixture_model.pt"
+        )
+        st.write(f"✅ Model file downloaded to: {model_path}")
 
         model = SentimixtureNet()
+        st.write("📦 Loading model weights...")
         model.load_state_dict(torch.load(model_path, map_location=torch.device("cpu")))
         model.eval()
+        st.write("✅ Model loaded and ready!")
 
-        st.success("✅ Model and tokenizer loaded!")
         return model, tokenizer
     except Exception as e:
-        st.error(f"❌ Error loading model/tokenizer: {e}")
+        st.error(f"❌ Error loading model or tokenizer:\n{e}")
         raise e
 
 # -----------------------------
@@ -68,30 +73,6 @@ if st.button("🔍 Detect Sarcasm"):
                     logits = model(**inputs)
                     pred = torch.argmax(logits, dim=1).item()
                     label = "😏 Sarcastic" if pred == 1 else "🙂 Not Sarcastic"
-                    st.success(f"*Prediction:* {label}")
+                    st.success(f"Prediction: {label}")
             except Exception as e:
                 st.error(f"❌ Error during prediction: {e}")
-
-@st.cache_resource
-def load_model_and_tokenizer():
-    try:
-        st.write("🔄 Downloading tokenizer...")
-        tokenizer = AutoTokenizer.from_pretrained("kausar57056/urdu-sarcasm-detect")
-
-        st.write("📁 Downloading model file...")
-        model_path = hf_hub_download(
-            repo_id="kausar57056/urdu-sarcasm-detect",
-            filename="sentimixture_model.pt"
-        )
-        st.write(f"✅ Model file downloaded to: {model_path}")
-
-        model = SentimixtureNet()
-        st.write("📦 Loading model weights...")
-        model.load_state_dict(torch.load(model_path, map_location=torch.device("cpu")))
-        model.eval()
-        st.write("✅ Model loaded and ready!")
-
-        return model, tokenizer
-    except Exception as e:
-        st.error(f"❌ Error loading model or tokenizer:\n{e}")
-        raise e
