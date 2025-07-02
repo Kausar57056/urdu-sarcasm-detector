@@ -9,7 +9,7 @@ from huggingface_hub import hf_hub_download
 # -----------------------------
 class SentimixtureNet(nn.Module):
     def __init__(self):
-        super(SentimixtureNet, self).___init_()
+        super(SentimixtureNet, self).__init__()
         self.base = XLMRobertaModel.from_pretrained("xlm-roberta-base")
         self.routing = nn.Linear(768, 768)
         self.attn = nn.MultiheadAttention(embed_dim=768, num_heads=8, batch_first=True)
@@ -40,15 +40,17 @@ def load_model_and_tokenizer():
         )
         st.write(f"✅ Model file downloaded to: {model_path}")
 
+        st.write("📦 Initializing model architecture...")
         model = SentimixtureNet()
-        st.write("📦 Loading model weights...")
+
+        st.write("📥 Loading model weights...")
         model.load_state_dict(torch.load(model_path, map_location=torch.device("cpu")))
         model.eval()
-        st.write("✅ Model loaded and ready!")
 
+        st.success("✅ Model and tokenizer loaded successfully!")
         return model, tokenizer
     except Exception as e:
-        st.error(f"❌ Error loading model or tokenizer:\n{e}")
+        st.error(f"❌ Error loading model or tokenizer:\n\n{e}")
         raise e
 
 # -----------------------------
@@ -58,10 +60,13 @@ st.set_page_config(page_title="Urdu Sarcasm Detector", layout="centered")
 st.title("😏 Urdu Sarcasm Detection")
 st.write("Enter an Urdu tweet to detect if it's sarcastic or not.")
 
+# Load model and tokenizer once
 model, tokenizer = load_model_and_tokenizer()
 
+# Input
 text = st.text_area("✍️ Write your Urdu tweet here:")
 
+# Prediction
 if st.button("🔍 Detect Sarcasm"):
     if not text.strip():
         st.warning("⚠️ Please enter some Urdu text.")
@@ -73,6 +78,6 @@ if st.button("🔍 Detect Sarcasm"):
                     logits = model(**inputs)
                     pred = torch.argmax(logits, dim=1).item()
                     label = "😏 Sarcastic" if pred == 1 else "🙂 Not Sarcastic"
-                    st.success(f"Prediction: {label}")
+                    st.success(f"*Prediction:* {label}")
             except Exception as e:
-                st.error(f"❌ Error during prediction: {e}")
+                st.error(f"❌ Error during prediction:\n\n{e}")
