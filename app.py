@@ -96,16 +96,79 @@ def log_feedback_to_gsheet(tweet, prediction, confidence, user_feedback):
         return False
 
 # ------------------------------
-# (Insert rest of UI and detection logic here)
-# Feedback Buttons Usage Example:
-# if detect:
-#     st.session_state.last_prediction = {
-#         "text": text,
-#         "label": label,
-#         "confidence": confidence
-#     }
-#     ...
-#     if st.button("👍 Yes, correct"):
-#         log_feedback_to_gsheet(text, label, confidence, "Yes")
-#     if st.button("👎 No, incorrect"):
-#         log_feedback_to_gsheet(text, label, confidence, "No")
+# Save prediction result
+# ------------------------------
+if detect:
+    if not text.strip():
+        st.warning("⚠️ Please enter or select a tweet.")
+    else:
+        with st.spinner("Analyzing for sarcasm..."):
+            try:
+                inputs = tokenizer(text, return_tensors="pt", truncation=True, padding=True, max_length=128)
+                with torch.no_grad():
+                    logits = model(**inputs)
+                    probs = torch.softmax(logits, dim=1).squeeze()
+                    pred = torch.argmax(probs).item()
+                    confidence = probs[pred].item()
+                    label = "😏 Sarcastic" if pred == 1 else "🙂 Not Sarcastic"
+                    color = "#ffcccc" if pred == 1 else "#d4edda"
+                    bar_color = "#ff6666" if pred == 1 else "#66bb6a"
+
+                    st.session_state.last_prediction = {
+                        "text": text,
+                        "label": label,
+                        "confidence": confidence
+                    }
+
+                    st.markdown(f"""
+                        <div class=\"result-box\">
+                            <h4>{label}</h4>
+                            <p><strong>Confidence:</strong> {confidence:.2%}</p>
+                            <p><strong>Tweet:</strong> {text}</p>
+                        </div>
+                        <style>
+                            .confidence-bar {{
+                                background-color: #ddd;
+                                border-radius: 10px;
+                                overflow: hidden;
+                                height: 20px;
+                                width: 100%;
+                                margin-top: 10px;
+                            }}
+                            .confidence-fill {{
+                                height: 100%;
+                                width: {confidence * 100:.2f}%;
+                                background-color: {bar_color};
+                                border-radius: 10px;
+                                transition: width 0.5s ease-in-out;
+                            }}
+                        </style>
+                        <div class=\"confidence-bar\">
+                            <div class=\"confidence-fill\"></div>
+                        </div>
+                    """, unsafe_allow_html=True)
+
+            except Exception as e:
+                st.error(f"❌ Prediction failed: {e}")
+
+# ------------------------------
+# Feedback Section
+# ------------------------------
+st.markdown("### Did we get it right?")
+col_yes, col_no = st.columns(2)
+
+with col_yes:
+    if st.button("👍 Yes, correct"):
+        pred = st.session_state.get("last_prediction", {})
+        if pred:
+            if log_feedback_to_gsheet(pred["text"], pred["label"], pred["confidence"], "Yes"):
+                st.success("Thanks for your feedback! 🙌")
+
+with col_no:
+    if st.button("👎 No, incorrect"):
+        pred = st.session_state.get("last_prediction", {})
+        if pred:
+            feedback = st.text_input("Tell us what went wrong (optional):", key="feedback_input")
+            if st.button("Submit Feedback"):
+                if log_feedback_to_gsheet(pred["text"], pred["label"], pred["confidence"], feedback or "No"):
+                    st.warning("Thanks! We'll use your feedback to improve. 💡")
