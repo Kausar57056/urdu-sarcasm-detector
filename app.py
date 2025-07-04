@@ -96,6 +96,38 @@ def log_feedback_to_gsheet(tweet, prediction, confidence, user_feedback):
         return False
 
 # ------------------------------
+# Input Text + Detect Button
+# ------------------------------
+st.subheader("📝 Paste or type an Urdu tweet")
+
+def set_example(example_text):
+    st.session_state.input_text = example_text
+
+text = st.text_area(
+    " ",
+    height=150,
+    placeholder="مثال: واہ جی، بہت ہی بہترین سروس ہے، تین گھنٹے سے انتظار کر رہا ہوں۔",
+    key="input_text"
+)
+
+# Examples
+st.markdown("💡 **Examples:**")
+examples = [
+    "جیسے ھو ویسے رہو ویسے نظر آو۔ بس",
+    "` مراد علی شاہ کے بھیس میں ڈی جی آئی ایس آئی تھے '' حامد میر",
+    "مریم نواز کو انگلش نہیں آتی اور بلاول صاحبہ کو اردو نہیں آتی اور انکے سپورٹرز کو شرم نہیں آتی",
+    "کامران خان صاحب آپ کیوں ذلالت کی چوٹی پر پہنچنا چاہ رہے ہیں"
+]
+cols = st.columns(len(examples))
+for i, example in enumerate(examples):
+    cols[i].button(example, key=f"ex{i}", on_click=set_example, args=(example,))
+
+# Centered detect button
+col1, col2, col3 = st.columns([1, 2, 1])
+with col2:
+    detect = st.button("🔎 Detect Sarcasm")
+
+# ------------------------------
 # Save prediction result
 # ------------------------------
 if detect:
