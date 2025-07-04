@@ -77,8 +77,7 @@ def load_model_and_tokenizer():
     tokenizer = AutoTokenizer.from_pretrained(tokenizer_dir)
     return model, tokenizer
 
-
-    # ------------------------------
+# ------------------------------
 # Enhanced Streamlit UI - V2
 # ------------------------------
 st.set_page_config(page_title="Urdu Sarcasm Detector", page_icon="😏", layout="centered")
@@ -118,9 +117,17 @@ st.markdown("---")
 
 # Input Section
 st.subheader("📝 Paste or type an Urdu tweet")
-text = st.text_area(" ", height=150, placeholder="مثال: واہ جی، بہت ہی بہترین سروس ہے، تین گھنٹے سے انتظار کر رہا ہوں۔")
 
-# Example Suggestions
+st.subheader("📝 Paste or type an Urdu tweet")
+
+# Session state init
+if "input_text" not in st.session_state:
+    st.session_state.input_text = ""
+
+# Text area
+text = st.text_area(" ", height=150, placeholder="مثال: واہ جی، بہت ہی بہترین سروس ہے، تین گھنٹے سے انتظار کر رہا ہوں۔", value=st.session_state.input_text)
+
+# Example buttons
 st.markdown("💡 **Examples:**")
 examples = [
     "کمال ہے، بارش میں بھی بجلی نہیں گئی، حیرت ہے۔",
@@ -131,7 +138,7 @@ examples = [
 cols = st.columns(len(examples))
 for i, example in enumerate(examples):
     if cols[i].button(example, key=f"ex{i}"):
-        text = example
+        st.session_state.input_text = example
         st.experimental_rerun()
 
 # Centered Detect Button
