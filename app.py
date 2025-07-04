@@ -77,23 +77,20 @@ def load_model_and_tokenizer():
 # ------------------------------
 # Feedback Logging Function
 # ------------------------------
-def get_gsheet_client():
-    scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-    creds_path = "dauntless-loop-412713-2291c976a99e.json"
-    creds = ServiceAccountCredentials.from_json_keyfile_name(creds_path, scope)
-    return gspread.authorize(creds)
 
-def log_feedback_to_gsheet(tweet, prediction, confidence, user_feedback):
-    try:
-        client = get_gsheet_client()
-        sheet = client.open("Sarcasm_Feedback").sheet1
-        now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        row = [now, tweet, prediction, f"{confidence:.2%}", user_feedback]
-        sheet.append_row(row)
-        return True
-    except Exception as e:
-        st.error(f"❌ Failed to log feedback: {e}")
-        return False
+def get_gsheet_client():
+    import json
+    import tempfile
+
+    # Write secrets to a temporary JSON file
+    with tempfile.NamedTemporaryFile(mode="w+", delete=False) as temp_file:
+        json.dump(st.secrets["gsheets"], temp_file)
+        temp_file.flush()
+        creds = ServiceAccountCredentials.from_json_keyfile_name(temp_file.name, scopes=[
+            "https://spreadsheets.google.com/feeds",
+            "https://www.googleapis.com/auth/drive"
+        ])
+    return gspread.authorize(creds)
 
 # ------------------------------
 # Input Text + Detect Button
