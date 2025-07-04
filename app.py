@@ -239,17 +239,20 @@ if detect:
             except Exception as e:
                 st.error(f"❌ Prediction failed: {e}")
 
-# Feedback Section - Centered Nicely
+# Feedback header
 st.markdown(
-    """
-    <div style='text-align: center; margin-top: 40px; margin-bottom: 10px;'>
-        <h4>Did we get it right?</h4>
-    </div>
-    """, unsafe_allow_html=True
+    "<div style='text-align: center; margin-top: 40px; margin-bottom: 10px;'>"
+    "<h4>Did we get it right?</h4>"
+    "</div>",
+    unsafe_allow_html=True
 )
 
-# Wider middle columns to prevent squashing
+# Centered buttons with proper width
 spacer1, col_yes, col_no, spacer2 = st.columns([1, 3, 3, 1])
+
+# Initialize state variable
+if "show_feedback_input" not in st.session_state:
+    st.session_state.show_feedback_input = False
 
 with col_yes:
     if st.button("👍 Yes, correct"):
@@ -259,9 +262,14 @@ with col_yes:
 
 with col_no:
     if st.button("👎 No, incorrect"):
+        st.session_state.show_feedback_input = True
+
+# Show feedback input box if user clicked "No"
+if st.session_state.show_feedback_input:
+    feedback = st.text_area("Tell us what went wrong (optional):", key="feedback_input", height=80)
+    if st.button("Submit Feedback"):
         pred = st.session_state.get("last_prediction", {})
         if pred:
-            feedback = st.text_area("Tell us what went wrong:", key="feedback_input", height=100)
-            if st.button("Submit Feedback"):
-                if log_feedback_to_gsheet(pred["text"], pred["label"], pred["confidence"], feedback or "No"):
-                    st.warning("Thanks! We'll use your feedback to improve. 💡")
+            if log_feedback_to_gsheet(pred["text"], pred["label"], pred["confidence"], feedback or "No"):
+                st.success("Thanks! We'll use your feedback to improve. 💡")
+                st.session_state.show_feedback_input = False  # Reset after submission
