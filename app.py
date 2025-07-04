@@ -239,7 +239,7 @@ if detect:
             except Exception as e:
                 st.error(f"❌ Prediction failed: {e}")
 
-# Feedback Section - Centered with Proper Column Spacing
+# Feedback Section - Centered Nicely
 st.markdown(
     """
     <div style='text-align: center; margin-top: 40px; margin-bottom: 10px;'>
@@ -248,7 +248,8 @@ st.markdown(
     """, unsafe_allow_html=True
 )
 
-spacer1, col_yes, col_no, spacer2 = st.columns([2, 1, 1, 2])
+# Wider middle columns to prevent squashing
+spacer1, col_yes, col_no, spacer2 = st.columns([1, 3, 3, 1])
 
 with col_yes:
     if st.button("👍 Yes, correct"):
