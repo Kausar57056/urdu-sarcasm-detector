@@ -261,7 +261,7 @@ with col_no:
     if st.button("👎 No, incorrect"):
         pred = st.session_state.get("last_prediction", {})
         if pred:
-            feedback = st.text_area("Tell us what went wrong (optional):", key="feedback_input", height=80)
+            feedback = st.text_area("Tell us what went wrong:", key="feedback_input", height=100)
             if st.button("Submit Feedback"):
                 if log_feedback_to_gsheet(pred["text"], pred["label"], pred["confidence"], feedback or "No"):
                     st.warning("Thanks! We'll use your feedback to improve. 💡")
