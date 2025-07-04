@@ -92,6 +92,18 @@ def get_gsheet_client():
         ])
     return gspread.authorize(creds)
 
+def log_feedback_to_gsheet(tweet, prediction, confidence, user_feedback):
+    try:
+        client = get_gsheet_client()
+        sheet = client.open("Sarcasm_Feedback").sheet1  # Make sure this is the exact name of your sheet
+        now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        row = [now, tweet, prediction, f"{confidence:.2%}", user_feedback]
+        sheet.append_row(row)
+        return True
+    except Exception as e:
+        st.error(f"❌ Failed to log feedback: {e}")
+        return False
+
 # ------------------------------
 # Input Text + Detect Button
 # ------------------------------
