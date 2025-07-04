@@ -107,6 +107,12 @@ st.markdown("""
             color: #000;
             text-decoration: underline;
         }
+   /* Center the middle column contents */
+        div[data-testid="column"]:nth-child(2) {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
     </style>
 """, unsafe_allow_html=True)
 
