@@ -118,19 +118,21 @@ st.markdown("---")
 # Input Section
 st.subheader("📝 Paste or type an Urdu tweet")
 
-# Session state init
-if "input_text" not in st.session_state:
-    st.session_state.input_text = ""
+# Check for temporary example injection
+if "example_temp" in st.session_state:
+    st.session_state.input_text = st.session_state.example_temp
+    del st.session_state["example_temp"]
 
-#Text area
+# Text area (remains bound to 'input_text')
 text = st.text_area(
     " ",
     height=150,
     placeholder="مثال: واہ جی، بہت ہی بہترین سروس ہے، تین گھنٹے سے انتظار کر رہا ہوں۔",
-    key="input_text"  # ✅ This keeps it synced with session_state
+    key="input_text"
 )
+text = st.session_state.input_text
 
-# Example buttons
+# Examples
 st.markdown("💡 **Examples:**")
 examples = [
     "کمال ہے، بارش میں بھی بجلی نہیں گئی، حیرت ہے۔",
@@ -141,7 +143,8 @@ examples = [
 cols = st.columns(len(examples))
 for i, example in enumerate(examples):
     if cols[i].button(example, key=f"ex{i}"):
-        st.session_state.input_text = example
+        st.session_state.example_temp = example
+        st.experimental_rerun()  # This is now safe
 
 # Centered Detect Button
 col1, col2, col3 = st.columns([1, 2, 1])
