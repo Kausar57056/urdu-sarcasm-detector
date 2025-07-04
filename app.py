@@ -152,10 +152,6 @@ cols = st.columns(len(examples))
 for i, example in enumerate(examples):
     cols[i].button(example, key=f"ex{i}", on_click=set_example, args=(example,))
 
-# Centered detect button
-col1, col2, col3 = st.columns([1, 2, 1])
-with col2:
-    detect = st.button("🔎 Detect Sarcasm")
 
 # Detect button centered
 st.markdown(
