@@ -25,32 +25,6 @@ class SentimixtureNet(nn.Module):
         return logits
 
 # -----------------------------
-# Streamlit UI
-# -----------------------------
-st.set_page_config(page_title="Urdu Sarcasm Detector", layout="centered")
-st.title("😏 Urdu Sarcasm Detection")
-st.write("Enter an Urdu tweet to detect if it's sarcastic or not.")
-
-model, tokenizer = load_model_and_tokenizer()
-
-text = st.text_area("✍️ Write your Urdu tweet here:")
-
-if st.button("🔍 Detect Sarcasm"):
-    if not text.strip():
-        st.warning("⚠️ Please enter some Urdu text.")
-    else:
-        with st.spinner("Analyzing..."):
-            try:
-                inputs = tokenizer(text, return_tensors="pt", truncation=True, padding=True, max_length=128)
-                with torch.no_grad():
-                    logits = model(**inputs)
-                    pred = torch.argmax(logits, dim=1).item()
-                    label = "😏 Sarcastic" if pred == 1 else "🙂 Not Sarcastic"
-                    st.success(f"*Prediction:* {label}")
-            except Exception as e:
-                st.error(f"❌ Error during prediction: {e}")
-
-# -----------------------------
 # Load model & tokenizer
 # -----------------------------
 @st.cache_resource
@@ -76,3 +50,30 @@ def load_model_and_tokenizer():
     except Exception as e:
         st.error(f"❌ Error loading model or tokenizer:\n{e}")
         raise e
+
+
+# -----------------------------
+# Streamlit UI
+# -----------------------------
+st.set_page_config(page_title="Urdu Sarcasm Detector", layout="centered")
+st.title("😏 Urdu Sarcasm Detection")
+st.write("Enter an Urdu tweet to detect if it's sarcastic or not.")
+
+model, tokenizer = load_model_and_tokenizer()
+
+text = st.text_area("✍️ Write your Urdu tweet here:")
+
+if st.button("🔍 Detect Sarcasm"):
+    if not text.strip():
+        st.warning("⚠️ Please enter some Urdu text.")
+    else:
+        with st.spinner("Analyzing..."):
+            try:
+                inputs = tokenizer(text, return_tensors="pt", truncation=True, padding=True, max_length=128)
+                with torch.no_grad():
+                    logits = model(**inputs)
+                    pred = torch.argmax(logits, dim=1).item()
+                    label = "😏 Sarcastic" if pred == 1 else "🙂 Not Sarcastic"
+                    st.success(f"*Prediction:* {label}")
+            except Exception as e:
+                st.error(f"❌ Error during prediction: {e}")
