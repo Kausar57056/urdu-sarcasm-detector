@@ -77,56 +77,81 @@ def load_model_and_tokenizer():
     tokenizer = AutoTokenizer.from_pretrained(tokenizer_dir)
     return model, tokenizer
 
-# ------------------------------
-# Enhanced Streamlit UI
+
+    # ------------------------------
+# Enhanced Streamlit UI - V2
 # ------------------------------
 st.set_page_config(page_title="Urdu Sarcasm Detector", page_icon="😏", layout="centered")
-st.markdown(
-    """
+
+# Custom CSS Styling
+st.markdown("""
     <style>
-        .main { background-color: #f9f9f9; }
+        body {
+            background-color: #f4f6f8;
+        }
         .stTextArea textarea {
-            font-size: 16px;
+            font-size: 16px !important;
         }
         .result-box {
-            background-color: #f0f2f6;
-            padding: 1.2em;
-            border-radius: 10px;
-            border: 1px solid #d3d3d3;
+            background: linear-gradient(to right, #ffffff, #f0f0f0);
+            border-left: 6px solid #6c63ff;
+            padding: 1em;
+            border-radius: 8px;
+            box-shadow: 2px 2px 8px rgba(0,0,0,0.1);
             margin-top: 20px;
         }
+        .example {
+            color: #666;
+            cursor: pointer;
+        }
+        .example:hover {
+            color: #000;
+            text-decoration: underline;
+        }
     </style>
-    """,
-    unsafe_allow_html=True
-)
+""", unsafe_allow_html=True)
 
-# Title and description
-st.title("😏 Urdu Sarcasm Detector")
-st.caption("Detect sarcasm in Urdu tweets using a deep learning model trained on XLM-Roberta.")
+# Title and Subtitle
+st.markdown("<h1 style='text-align: center;'>😏 Urdu Sarcasm Detector</h1>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center;'>🔍 Detect sarcasm in Urdu tweets using deep learning</p>", unsafe_allow_html=True)
+st.markdown("---")
 
-# Input section
-with st.container():
-    st.subheader("📝 Paste an Urdu tweet:")
-    text = st.text_area("Enter text here:", height=150, placeholder="مثال:انساں کو تھکا دیتا ہے سوچوں کا سفر بھی۔")
+# Input Section
+st.subheader("📝 Paste or type an Urdu tweet")
+text = st.text_area(" ", height=150, placeholder="مثال: واہ جی، بہت ہی بہترین سروس ہے، تین گھنٹے سے انتظار کر رہا ہوں۔")
 
-# Predict button
+# Example Suggestions
+st.markdown("💡 **Examples:**")
+examples = [
+    "کمال ہے، بارش میں بھی بجلی نہیں گئی، حیرت ہے۔",
+    "واہ واہ! بہت زبردست کام کیا حکومت نے، سب کچھ مہنگا کر دیا۔",
+    "کتنی اچھی نیند آئی آج، صرف تین بار الارم بجا۔",
+    "اتنی اچھی فلم تھی کہ سارا ہال سو گیا۔"
+]
+cols = st.columns(len(examples))
+for i, example in enumerate(examples):
+    if cols[i].button(example, key=f"ex{i}"):
+        text = example
+        st.experimental_rerun()
+
+# Centered Detect Button
 col1, col2, col3 = st.columns([1, 2, 1])
 with col2:
-    detect = st.button("🔍 Detect Sarcasm")
+    detect = st.button("🔎 Detect Sarcasm")
 
-# Load model and tokenizer
+# Load model
 try:
     model, tokenizer = load_model_and_tokenizer()
 except Exception as e:
     st.error(f"❌ Failed to load model/tokenizer: {e}")
     st.stop()
 
-# Prediction logic
+# Prediction Logic
 if detect:
     if not text.strip():
-        st.warning("⚠️ Please enter some text to analyze.")
+        st.warning("⚠️ Please enter or select a tweet.")
     else:
-        with st.spinner("🔍 Analyzing for sarcasm..."):
+        with st.spinner("Analyzing for sarcasm..."):
             try:
                 inputs = tokenizer(text, return_tensors="pt", truncation=True, padding=True, max_length=128)
                 with torch.no_grad():
@@ -134,18 +159,23 @@ if detect:
                     probs = torch.softmax(logits, dim=1).squeeze()
                     pred = torch.argmax(probs).item()
                     confidence = probs[pred].item()
-                    label = "😏 **Sarcastic**" if pred == 1 else "🙂 **Not Sarcastic**"
-                    color = "#f8d7da" if pred == 1 else "#d4edda"
-                    emoji = "😏" if pred == 1 else "🙂"
+                    label = "😏 Sarcastic" if pred == 1 else "🙂 Not Sarcastic"
+                    color = "#ffcccc" if pred == 1 else "#d4edda"
 
-                    st.markdown(
-                        f"""
-                        <div class="result-box" style="background-color: {color};">
-                            <h4>{emoji} Prediction: {label}</h4>
+                    st.markdown(f"""
+                        <div class="result-box">
+                            <h4>{label}</h4>
                             <p><strong>Confidence:</strong> {confidence:.2%}</p>
+                            <p><strong>Tweet:</strong> {text}</p>
                         </div>
-                        """,
-                        unsafe_allow_html=True
-                    )
+                    """, unsafe_allow_html=True)
             except Exception as e:
                 st.error(f"❌ Prediction failed: {e}")
+
+# Optional Model Info
+with st.expander("ℹ️ Model Info"):
+    st.markdown("""
+    - 🤖 Model: **XLM-Roberta + Attention**
+    - 🧠 Built with: PyTorch, Transformers
+    - 📁 Loaded from: Dropbox
+    - 🔍 Output: B
