@@ -1,12 +1,13 @@
 import streamlit as st
 import torch
 import torch.nn as nn
+import requests
+import os
 from transformers import AutoTokenizer, XLMRobertaModel
-from huggingface_hub import hf_hub_download
 
-# -----------------------------
-# Define SentimixtureNet model
-# -----------------------------
+# ------------------------------
+# Custom Model Definition
+# ------------------------------
 class SentimixtureNet(nn.Module):
     def __init__(self):
         super(SentimixtureNet, self).__init__()
@@ -24,37 +25,36 @@ class SentimixtureNet(nn.Module):
         logits = self.classifier(pooled)
         return logits
 
-# -----------------------------
-# Load model & tokenizer
-# -----------------------------
+# ------------------------------
+# Model + Tokenizer Loader
+# ------------------------------
 @st.cache_resource
 def load_model_and_tokenizer():
     try:
-        st.write("🔄 Downloading tokenizer...")
-        tokenizer = AutoTokenizer.from_pretrained("kausar57056/urdu-sarcasm-detect")
+        st.write("📦 Downloading model...")
+        dropbox_url = "https://www.dropbox.com/scl/fi/6p5l4kmjwglsx4bzp7u9t/sentimixture_model.pt?rlkey=qyii1kgniduebx4qyjagim0xk&st=pmmh1dut&dl=1"
+        model_path = "sentimixture_model.pt"
 
-        st.write("📁 Downloading model file...")
-        model_path = hf_hub_download(
-            repo_id="kausar57056/urdu-sarcasm-detect",
-            filename="sentimixture_model.pt"
-        )
-        st.write(f"✅ Model file downloaded to: {model_path}")
+        if not os.path.exists(model_path):
+            with open(model_path, "wb") as f:
+                f.write(requests.get(dropbox_url).content)
 
         model = SentimixtureNet()
-        st.write("📦 Loading model weights...")
         model.load_state_dict(torch.load(model_path, map_location=torch.device("cpu")))
         model.eval()
-        st.write("✅ Model loaded and ready!")
 
+        tokenizer = AutoTokenizer.from_pretrained("xlm-roberta-base")
+
+        st.success("✅ Model & tokenizer loaded successfully.")
         return model, tokenizer
+
     except Exception as e:
-        st.error(f"❌ Error loading model or tokenizer:\n{e}")
+        st.error(f"❌ Failed to load model/tokenizer: {e}")
         raise e
 
-
-# -----------------------------
+# ------------------------------
 # Streamlit UI
-# -----------------------------
+# ------------------------------
 st.set_page_config(page_title="Urdu Sarcasm Detector", layout="centered")
 st.title("😏 Urdu Sarcasm Detection")
 st.write("Enter an Urdu tweet to detect if it's sarcastic or not.")
@@ -64,7 +64,7 @@ model, tokenizer = load_model_and_tokenizer()
 text = st.text_area("✍️ Write your Urdu tweet here:")
 
 if st.button("🔍 Detect Sarcasm"):
-    if not text.strip():
+    if text.strip() == "":
         st.warning("⚠️ Please enter some Urdu text.")
     else:
         with st.spinner("Analyzing..."):
@@ -76,4 +76,4 @@ if st.button("🔍 Detect Sarcasm"):
                     label = "😏 Sarcastic" if pred == 1 else "🙂 Not Sarcastic"
                     st.success(f"*Prediction:* {label}")
             except Exception as e:
-                st.error(f"❌ Error during prediction: {e}")
+                st.error(f"❌ Prediction failed: {e}")
