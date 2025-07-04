@@ -53,10 +53,10 @@ def load_model_and_tokenizer():
 
     # Tokenizer files
     tokenizer_files = {
-        "sentencepiece.bpe.model": "https://www.dropbox.com/scl/fi/zb8h3hpt2g7glopn2xhqx/sentencepiece.bpe.model?rlkey=eqwaym45sg419b5m67zxs0jfs&st=97sy243j&dl=0",
-        "special_tokens_map.json": "https://www.dropbox.com/scl/fi/ehiwmv4wwiveto6lqleac/special_tokens_map.json?rlkey=q4gpcw7z9nwk97cmlgxrb52ky&st=zng6v2qx&dl=0",
-        "tokenizer_config.json": "https://www.dropbox.com/scl/fi/4kv21xx93zqs6koarzvca/tokenizer_config.json?rlkey=5jdqzmfprmrg5spi3jbe8qx1k&st=viyrdlnr&dl=0"
-    }
+    "sentencepiece.bpe.model": "https://www.dl.dropboxusercontent.com/scl/fi/zb8h3hpt2g7glopn2xhqx/sentencepiece.bpe.model?rlkey=eqwaym45sg419b5m67zxs0jfs&st=97sy243j&raw=1",
+    "special_tokens_map.json": "https://www.dl.dropboxusercontent.com/scl/fi/ehiwmv4wwiveto6lqleac/special_tokens_map.json?rlkey=q4gpcw7z9nwk97cmlgxrb52ky&st=zng6v2qx&raw=1",
+    "tokenizer_config.json": "https://www.dl.dropboxusercontent.com/scl/fi/4kv21xx93zqs6koarzvca/tokenizer_config.json?rlkey=5jdqzmfprmrg5spi3jbe8qx1k&st=viyrdlnr&raw=1",
+}
 
     # Download model
     if not download_from_dropbox(model_url, model_path):
