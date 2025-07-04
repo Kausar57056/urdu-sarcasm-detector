@@ -188,6 +188,7 @@ if detect:
                     confidence = probs[pred].item()
                     label = "😏 Sarcastic" if pred == 1 else "🙂 Not Sarcastic"
                     color = "#ffcccc" if pred == 1 else "#d4edda"
+                    bar_color = "#ff6666" if pred == 1 else "#66bb6a"  # red-ish or green-ish
 
                     st.markdown(f"""
                         <div class="result-box">
@@ -195,6 +196,27 @@ if detect:
                             <p><strong>Confidence:</strong> {confidence:.2%}</p>
                             <p><strong>Tweet:</strong> {text}</p>
                         </div>
+                        <style>
+                            .confidence-bar {{
+                                background-color: #ddd;
+                                border-radius: 10px;
+                                overflow: hidden;
+                                height: 20px;
+                                width: 100%;
+                                margin-top: 10px;
+                            }}
+                            .confidence-fill {{
+                                height: 100%;
+                                width: {confidence * 100:.2f}%;
+                                background-color: {bar_color};
+                                border-radius: 10px;
+                                transition: width 0.5s ease-in-out;
+                            }}
+                        </style>
+                        <div class="confidence-bar">
+                            <div class="confidence-fill"></div>
+                        </div>
                     """, unsafe_allow_html=True)
+
             except Exception as e:
                 st.error(f"❌ Prediction failed: {e}")
