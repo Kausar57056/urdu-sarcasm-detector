@@ -220,3 +220,50 @@ if detect:
 
             except Exception as e:
                 st.error(f"❌ Prediction failed: {e}")
+
+import io
+from PIL import Image, ImageDraw, ImageFont
+import urllib.parse
+
+# Feedback Section
+st.markdown("### 👍 Did we get it right?")
+col_yes, col_no = st.columns(2)
+with col_yes:
+    if st.button("👍 Yes, correct"):
+        st.success("Thanks for your feedback! 🙌")
+
+with col_no:
+    if st.button("👎 No, incorrect"):
+        st.warning("Thanks! We'll use your feedback to improve. 💡")
+
+# Image Export
+def create_result_image(label, confidence, tweet_text):
+    img = Image.new("RGB", (600, 240), color=(244, 246, 248))
+    draw = ImageDraw.Draw(img)
+    try:
+        font = ImageFont.truetype("arial.ttf", 20)
+    except:
+        font = ImageFont.load_default()
+
+    draw.text((20, 20), f"Prediction: {label}", fill=(0, 0, 0), font=font)
+    draw.text((20, 60), f"Confidence: {confidence:.2%}", fill=(0, 0, 0), font=font)
+    draw.text((20, 100), "Tweet:", fill=(0, 0, 0), font=font)
+    draw.text((20, 130), tweet_text, fill=(0, 0, 0), font=font)
+    return img
+
+result_img = create_result_image(label, confidence, text)
+img_buf = io.BytesIO()
+result_img.save(img_buf, format="PNG")
+img_bytes = img_buf.getvalue()
+
+st.download_button(
+    label="📥 Download result as image",
+    data=img_bytes,
+    file_name="sarcasm_result.png",
+    mime="image/png"
+)
+
+# Share on Twitter
+tweet_encoded = urllib.parse.quote(f"'{text}' → {label} ({confidence:.0%}) via #UrduSarcasmDetector")
+twitter_url = f"https://twitter.com/intent/tweet?text={tweet_encoded}"
+st.markdown(f"[🐦 Share on Twitter]({twitter_url})", unsafe_allow_html=True)
