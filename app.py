@@ -172,8 +172,6 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-detect = st.button("🔍 Detect Sarcasm")
-
 # ------------------------------
 # Load model and tokenizer
 # ------------------------------
