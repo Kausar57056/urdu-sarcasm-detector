@@ -128,6 +128,15 @@ with col2:
     detect = st.button("🔎 Detect Sarcasm")
 
 # ------------------------------
+# Load model and tokenizer
+# ------------------------------
+try:
+    model, tokenizer = load_model_and_tokenizer()
+except Exception as e:
+    st.error(f"❌ Failed to load model/tokenizer: {e}")
+    st.stop()
+
+# ------------------------------
 # Save prediction result
 # ------------------------------
 if detect:
