@@ -5,3 +5,5 @@ huggingface_hub
 sentencepiece
 scikit-learn
 pandas
+gspread
+oauth2client
