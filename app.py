@@ -111,8 +111,21 @@ def log_feedback_to_gsheet(tweet, prediction, confidence, user_feedback):
         return False
 
 # ------------------------------
+# App Title & Subtitle (Centered, with Emoji)
+# ------------------------------
+
+st.markdown("""
+    <h1 style='text-align: center; color: #003366;'>🤖 Urdu Sarcasm Detector 😏</h1>
+    <p style='text-align: center; font-size: 18px; color: #555;'>
+        Detect sarcasm in Urdu tweets using a deep learning model powered by XLM-RoBERTa
+    </p>
+""", unsafe_allow_html=True)
+
+
+# ------------------------------
 # Input Text + Detect Button
 # ------------------------------
+
 st.subheader("📝 Paste or type an Urdu tweet")
 
 def set_example(example_text):
