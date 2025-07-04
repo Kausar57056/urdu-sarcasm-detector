@@ -171,11 +171,3 @@ if detect:
                     """, unsafe_allow_html=True)
             except Exception as e:
                 st.error(f"❌ Prediction failed: {e}")
-
-# Optional Model Info
-with st.expander("ℹ️ Model Info"):
-    st.markdown("""
-    - 🤖 Model: **XLM-Roberta + Attention**
-    - 🧠 Built with: PyTorch, Transformers
-    - 📁 Loaded from: Dropbox
-    - 🔍 Output: B
