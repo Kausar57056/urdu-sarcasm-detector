@@ -1,18 +1,17 @@
 import streamlit as st
 import torch
 import torch.nn as nn
-import requests
 import os
+import requests
 from transformers import AutoTokenizer, XLMRobertaModel
-import torch.nn.functional as F
 
 # ------------------------------
-# Model Definition
+# SentimixtureNet Model Class
 # ------------------------------
 class SentimixtureNet(nn.Module):
-    def _init_(self):
-        super(SentimixtureNet, self)._init_()
-        self.base = XLMRobertaModel.from_pretrained("xlm-roberta-base")
+    def __init__(self):
+        super(SentimixtureNet, self).__init__()
+        self.base = XLMRobertaModel.from_pretrained("tokenizer/")
         self.routing = nn.Linear(768, 768)
         self.attn = nn.MultiheadAttention(embed_dim=768, num_heads=8, batch_first=True)
         self.classifier = nn.Linear(768, 2)
@@ -27,85 +26,87 @@ class SentimixtureNet(nn.Module):
         return logits
 
 # ------------------------------
-# Load Model & Tokenizer from Dropbox
+# Dropbox Download Function
+# ------------------------------
+def download_from_dropbox(url, local_path):
+    try:
+        if not os.path.exists(local_path):
+            r = requests.get(url.replace("?dl=0", "?dl=1"), stream=True)
+            r.raise_for_status()
+            with open(local_path, 'wb') as f:
+                for chunk in r.iter_content(chunk_size=8192):
+                    f.write(chunk)
+        return True
+    except Exception as e:
+        st.error(f"❌ Error downloading {local_path}: {e}")
+        return False
+
+# ------------------------------
+# Load Model and Tokenizer (Cached)
 # ------------------------------
 @st.cache_resource
 def load_model_and_tokenizer():
-    dropbox_url = (
-        "https://www.dropbox.com/scl/fi/6p5l4kmjwglsx4bzp7u9t/sentimixture_model.pt"
-        "?rlkey=qyii1kgniduebx4qyjagim0xk&st=pmmh1dut&dl=1"
-    )
+    model_url = "https://www.dropbox.com/scl/fi/6p5l4kmjwglsx4bzp7u9t/sentimixture_model.pt?rlkey=qyii1kgniduebx4qyjagim0xk&st=pmmh1dut&dl=1"
     model_path = "sentimixture_model.pt"
+    tokenizer_dir = "tokenizer/"
+    os.makedirs(tokenizer_dir, exist_ok=True)
 
-    with st.spinner("📦 Downloading and loading model..."):
-        try:
-            # Download model from Dropbox if not already present
-            if not os.path.exists(model_path):
-                response = requests.get(dropbox_url, stream=True)
-                total_size = int(response.headers.get("Content-Length", 0))
-                content_type = response.headers.get("Content-Type", "")
+    # Tokenizer files
+    tokenizer_files = {
+        "sentencepiece.bpe.model": "https://www.dropbox.com/scl/fi/zb8h3hpt2g7glopn2xhqx/sentencepiece.bpe.model?rlkey=eqwaym45sg419b5m67zxs0jfs&st=97sy243j&dl=0",
+        "special_tokens_map.json": "https://www.dropbox.com/scl/fi/ehiwmv4wwiveto6lqleac/special_tokens_map.json?rlkey=q4gpcw7z9nwk97cmlgxrb52ky&st=zng6v2qx&dl=0",
+        "tokenizer_config.json": "https://www.dropbox.com/scl/fi/4kv21xx93zqs6koarzvca/tokenizer_config.json?rlkey=5jdqzmfprmrg5spi3jbe8qx1k&st=viyrdlnr&dl=0"
+    }
 
-                if "html" in content_type:
-                    raise RuntimeError("Dropbox returned HTML instead of the model. Check your link.")
+    # Download model
+    if not download_from_dropbox(model_url, model_path):
+        raise RuntimeError("Model download failed.")
 
-                with open(model_path, "wb") as f:
-                    downloaded = 0
-                    for chunk in response.iter_content(1024 * 1024):  # 1MB
-                        if chunk:
-                            f.write(chunk)
-                            downloaded += len(chunk)
-                            percent = downloaded * 100 / total_size
-                            st.write(f"⬇️ Downloaded {downloaded // 1024*2}MB / {total_size // 1024*2}MB ({percent:.1f}%)")
+    # Download tokenizer files
+    for name, url in tokenizer_files.items():
+        path = os.path.join(tokenizer_dir, name)
+        if not download_from_dropbox(url, path):
+            raise RuntimeError(f"Failed to download {name}")
 
-            if os.path.getsize(model_path) < 100_000_000:  # Ensure file is >100MB
-                raise RuntimeError("Downloaded model is too small. Likely incomplete or corrupted.")
+    # Load model
+    model = SentimixtureNet()
+    model.load_state_dict(torch.load(model_path, map_location=torch.device('cpu')))
+    model.eval()
 
-            # Load model
-            model = SentimixtureNet()
-            model.load_state_dict(torch.load(model_path, map_location=torch.device("cpu")))
-            model.eval()
-
-            # Load tokenizer
-            tokenizer = AutoTokenizer.from_pretrained("xlm-roberta-base")
-
-            st.success("✅ Model and tokenizer loaded.")
-            return model, tokenizer
-
-        except Exception as e:
-            st.error(f"❌ Failed to load model/tokenizer: {e}")
-            raise e
+    # Load tokenizer
+    tokenizer = AutoTokenizer.from_pretrained(tokenizer_dir)
+    return model, tokenizer
 
 # ------------------------------
 # Streamlit UI
 # ------------------------------
-st.set_page_config(page_title="Urdu Sarcasm Detector", layout="centered")
-st.title("😏 Urdu Sarcasm Detection")
-st.write("Enter an Urdu tweet below to check if it's sarcastic or not.")
+st.set_page_config(page_title="Urdu Sarcasm Detector")
+st.title("😏 Urdu Sarcasm Detector")
+st.write("Paste an Urdu tweet below to check if it's sarcastic or not.")
 
-# Load model and tokenizer
-model, tokenizer = load_model_and_tokenizer()
+try:
+    model, tokenizer = load_model_and_tokenizer()
+    st.success("✅ Model & tokenizer loaded successfully.")
+except Exception as e:
+    st.error(f"Failed to load model/tokenizer: {e}")
+    st.stop()
 
-# User input
-text = st.text_area("✍️ Write your Urdu tweet here:")
+# Input
+text = st.text_area("✍️ Enter Urdu Tweet:")
 
-# Detect button
-if st.button("🔍 Detect Sarcasm"):
-    if text.strip() == "":
-        st.warning("⚠️ Please enter some Urdu text.")
+if st.button("Detect Sarcasm"):
+    if not text.strip():
+        st.warning("Please enter some text.")
     else:
         with st.spinner("Analyzing..."):
             try:
-                # Tokenize
                 inputs = tokenizer(text, return_tensors="pt", truncation=True, padding=True, max_length=128)
                 with torch.no_grad():
                     logits = model(**inputs)
-                    probs = F.softmax(logits, dim=1)
-                    pred = torch.argmax(probs, dim=1).item()
-                    confidence = probs[0, pred].item()
-
-                label = "😏 Sarcastic" if pred == 1 else "🙂 Not Sarcastic"
-                st.success(f"*Prediction:* {label}")
-                st.info(f"*Confidence:* {confidence * 100:.2f}%")
-
+                    probs = torch.softmax(logits, dim=1).squeeze()
+                    pred = torch.argmax(probs).item()
+                    confidence = probs[pred].item()
+                    label = "😏 Sarcastic" if pred == 1 else "🙂 Not Sarcastic"
+                    st.success(f"Prediction: *{label}\n\nConfidence: *{confidence:.2%}**")
             except Exception as e:
                 st.error(f"❌ Prediction failed: {e}")
