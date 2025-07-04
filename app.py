@@ -157,6 +157,23 @@ col1, col2, col3 = st.columns([1, 2, 1])
 with col2:
     detect = st.button("🔎 Detect Sarcasm")
 
+# Detect button centered
+st.markdown(
+    """
+    <style>
+    .stButton > button {
+        display: block;
+        margin: auto;
+        width: 200px;
+        font-weight: 600;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
+detect = st.button("🔍 Detect Sarcasm")
+
 # ------------------------------
 # Load model and tokenizer
 # ------------------------------
