@@ -226,7 +226,7 @@ from PIL import Image, ImageDraw, ImageFont
 import urllib.parse
 
 # Feedback Section
-st.markdown("### 👍 Did we get it right?")
+st.markdown("### Did we get it right?")
 col_yes, col_no = st.columns(2)
 with col_yes:
     if st.button("👍 Yes, correct"):
