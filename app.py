@@ -233,24 +233,33 @@ if detect:
             except Exception as e:
                 st.error(f"❌ Prediction failed: {e}")
 
-# ------------------------------
-# Feedback Section
-# ------------------------------
-st.markdown("### Did we get it right?")
-col_yes, col_no = st.columns(2)
+# Feedback Section - Center Aligned
 
-with col_yes:
-    if st.button("👍 Yes, correct"):
-        pred = st.session_state.get("last_prediction", {})
-        if pred:
-            if log_feedback_to_gsheet(pred["text"], pred["label"], pred["confidence"], "Yes"):
+st.markdown(
+    """
+    <div style='text-align: center; margin-top: 40px; margin-bottom: 10px;'>
+        <h4>Did we get it right?</h4>
+    </div>
+    """, unsafe_allow_html=True
+)
+
+# Three-column layout to center buttons in the middle column
+left, center, right = st.columns([1, 2, 1])
+
+with center:
+    feedback_col1, feedback_col2 = st.columns(2)
+
+    with feedback_col1:
+        if st.button("👍 Yes, correct"):
+            pred = st.session_state.get("last_prediction", {})
+            if pred and log_feedback_to_gsheet(pred["text"], pred["label"], pred["confidence"], "Yes"):
                 st.success("Thanks for your feedback! 🙌")
 
-with col_no:
-    if st.button("👎 No, incorrect"):
-        pred = st.session_state.get("last_prediction", {})
-        if pred:
-            feedback = st.text_input("Tell us what went wrong (optional):", key="feedback_input")
-            if st.button("Submit Feedback"):
-                if log_feedback_to_gsheet(pred["text"], pred["label"], pred["confidence"], feedback or "No"):
-                    st.warning("Thanks! We'll use your feedback to improve. 💡")
+    with feedback_col2:
+        if st.button("👎 No, incorrect"):
+            pred = st.session_state.get("last_prediction", {})
+            if pred:
+                feedback = st.text_input("Tell us what went wrong (optional):", key="feedback_input")
+                if st.button("Submit Feedback"):
+                    if log_feedback_to_gsheet(pred["text"], pred["label"], pred["confidence"], feedback or "No"):
+                        st.warning("Thanks! We'll use your feedback to improve. 💡")
