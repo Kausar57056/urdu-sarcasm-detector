@@ -148,9 +148,13 @@ examples = [
     "مریم نواز کو انگلش نہیں آتی اور بلاول صاحبہ کو اردو نہیں آتی اور انکے سپورٹرز کو شرم نہیں آتی",
     "کامران خان صاحب آپ کیوں ذلالت کی چوٹی پر پہنچنا چاہ رہے ہیں"
 ]
-cols = st.columns(len(examples))
-for i, example in enumerate(examples):
-    cols[i].button(example, key=f"ex{i}", on_click=set_example, args=(example,))
+
+# Display examples in 2 columns (better spacing)
+example_pairs = [examples[i:i + 2] for i in range(0, len(examples), 2)]
+for row in example_pairs:
+    cols = st.columns(len(row))
+    for i, example in enumerate(row):
+        cols[i].button(example, key=f"ex{example}", on_click=set_example, args=(example,))
 
 # Detect button logic
 detect = st.button("🔎 Detect Sarcasm")
