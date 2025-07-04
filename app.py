@@ -256,13 +256,13 @@ with center:
     feedback_col1, feedback_col2 = st.columns(2)
 
     with feedback_col1:
-        if st.button("👍 Yes, correct"):
+        if st.button("👍"):
             pred = st.session_state.get("last_prediction", {})
             if pred and log_feedback_to_gsheet(pred["text"], pred["label"], pred["confidence"], "Yes"):
                 st.success("Thanks for your feedback! 🙌")
 
     with feedback_col2:
-        if st.button("👎 No, incorrect"):
+        if st.button("👎"):
             pred = st.session_state.get("last_prediction", {})
             if pred:
                 feedback = st.text_input("Tell us what went wrong (optional):", key="feedback_input")
