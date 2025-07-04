@@ -82,15 +82,21 @@ def get_gsheet_client():
     import json
     import tempfile
 
-    # Write secrets to a temporary JSON file
+    # Convert st.secrets["gsheets"] to a regular dict
+    secrets_dict = dict(st.secrets["gsheets"])
+
     with tempfile.NamedTemporaryFile(mode="w+", delete=False) as temp_file:
-        json.dump(st.secrets["gsheets"], temp_file)
+        json.dump(secrets_dict, temp_file)
         temp_file.flush()
-        creds = ServiceAccountCredentials.from_json_keyfile_name(temp_file.name, scopes=[
-            "https://spreadsheets.google.com/feeds",
-            "https://www.googleapis.com/auth/drive"
-        ])
+        creds = ServiceAccountCredentials.from_json_keyfile_name(
+            temp_file.name,
+            scopes=[
+                "https://spreadsheets.google.com/feeds",
+                "https://www.googleapis.com/auth/drive"
+            ]
+        )
     return gspread.authorize(creds)
+
 
 def log_feedback_to_gsheet(tweet, prediction, confidence, user_feedback):
     try:
