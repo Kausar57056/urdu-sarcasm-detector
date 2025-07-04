@@ -79,7 +79,7 @@ def load_model_and_tokenizer():
 # ------------------------------
 def get_gsheet_client():
     scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-    creds_path = "/mnt/data/dauntless-loop-412713-2291c976a99e.json"
+    creds_path = creds_path = "dauntless-loop-412713-2291c976a99e.json"
     creds = ServiceAccountCredentials.from_json_keyfile_name(creds_path, scope)
     return gspread.authorize(creds)
 
