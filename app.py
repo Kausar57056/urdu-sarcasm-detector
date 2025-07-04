@@ -118,8 +118,6 @@ st.markdown("---")
 # Input Section
 st.subheader("📝 Paste or type an Urdu tweet")
 
-st.subheader("📝 Paste or type an Urdu tweet")
-
 # Session state init
 if "input_text" not in st.session_state:
     st.session_state.input_text = ""
