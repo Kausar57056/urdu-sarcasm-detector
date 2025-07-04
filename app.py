@@ -121,6 +121,15 @@ st.subheader("📝 Paste or type an Urdu tweet")
 def set_example(example_text):
     st.session_state.input_text = example_text
 
+# Text area bound to session_state['input_text']
+text = st.text_area(
+    " ",
+    height=150,
+    placeholder="مثال: واہ جی، بہت ہی بہترین سروس ہے، تین گھنٹے سے انتظار کر رہا ہوں۔",
+    key="input_text"
+)
+
+# Examples
 st.markdown("💡 **Examples:**")
 examples = [
     "کمال ہے، بارش میں بھی بجلی نہیں گئی، حیرت ہے۔",
@@ -131,6 +140,7 @@ examples = [
 cols = st.columns(len(examples))
 for i, example in enumerate(examples):
     cols[i].button(example, key=f"ex{i}", on_click=set_example, args=(example,))
+
 
 # Centered Detect Button
 col1, col2, col3 = st.columns([1, 2, 1])
