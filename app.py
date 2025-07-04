@@ -78,27 +78,55 @@ def load_model_and_tokenizer():
     return model, tokenizer
 
 # ------------------------------
-# Streamlit UI
+# Enhanced Streamlit UI
 # ------------------------------
-st.set_page_config(page_title="Urdu Sarcasm Detector")
-st.title("😏 Urdu Sarcasm Detector")
-st.write("Paste an Urdu tweet below to check if it's sarcastic or not.")
+st.set_page_config(page_title="Urdu Sarcasm Detector", page_icon="😏", layout="centered")
+st.markdown(
+    """
+    <style>
+        .main { background-color: #f9f9f9; }
+        .stTextArea textarea {
+            font-size: 16px;
+        }
+        .result-box {
+            background-color: #f0f2f6;
+            padding: 1.2em;
+            border-radius: 10px;
+            border: 1px solid #d3d3d3;
+            margin-top: 20px;
+        }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
 
+# Title and description
+st.title("😏 Urdu Sarcasm Detector")
+st.caption("Detect sarcasm in Urdu tweets using a deep learning model trained on XLM-Roberta.")
+
+# Input section
+with st.container():
+    st.subheader("📝 Paste an Urdu tweet:")
+    text = st.text_area("Enter text here:", height=150, placeholder="مثال:انساں کو تھکا دیتا ہے سوچوں کا سفر بھی۔")
+
+# Predict button
+col1, col2, col3 = st.columns([1, 2, 1])
+with col2:
+    detect = st.button("🔍 Detect Sarcasm")
+
+# Load model and tokenizer
 try:
     model, tokenizer = load_model_and_tokenizer()
-    st.success("✅ Model & tokenizer loaded successfully.")
 except Exception as e:
-    st.error(f"Failed to load model/tokenizer: {e}")
+    st.error(f"❌ Failed to load model/tokenizer: {e}")
     st.stop()
 
-# Input
-text = st.text_area("✍️ Enter Urdu Tweet:")
-
-if st.button("Detect Sarcasm"):
+# Prediction logic
+if detect:
     if not text.strip():
-        st.warning("Please enter some text.")
+        st.warning("⚠️ Please enter some text to analyze.")
     else:
-        with st.spinner("Analyzing..."):
+        with st.spinner("🔍 Analyzing for sarcasm..."):
             try:
                 inputs = tokenizer(text, return_tensors="pt", truncation=True, padding=True, max_length=128)
                 with torch.no_grad():
@@ -106,7 +134,18 @@ if st.button("Detect Sarcasm"):
                     probs = torch.softmax(logits, dim=1).squeeze()
                     pred = torch.argmax(probs).item()
                     confidence = probs[pred].item()
-                    label = "😏 Sarcastic" if pred == 1 else "🙂 Not Sarcastic"
-                    st.success(f"Prediction: *{label}\n\nConfidence: *{confidence:.2%}**")
+                    label = "😏 **Sarcastic**" if pred == 1 else "🙂 **Not Sarcastic**"
+                    color = "#f8d7da" if pred == 1 else "#d4edda"
+                    emoji = "😏" if pred == 1 else "🙂"
+
+                    st.markdown(
+                        f"""
+                        <div class="result-box" style="background-color: {color};">
+                            <h4>{emoji} Prediction: {label}</h4>
+                            <p><strong>Confidence:</strong> {confidence:.2%}</p>
+                        </div>
+                        """,
+                        unsafe_allow_html=True
+                    )
             except Exception as e:
                 st.error(f"❌ Prediction failed: {e}")
